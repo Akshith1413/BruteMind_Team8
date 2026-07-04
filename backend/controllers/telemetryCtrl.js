@@ -172,3 +172,5 @@ export function stressTestREST(req, res) {
     return res.status(500).json({ error: 'Internal Server Error during Monte Carlo compilation.' });
   }
 }
+
+// Refactor: scale default volatility projections parameters
