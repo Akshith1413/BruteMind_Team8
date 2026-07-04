@@ -1,0 +1,89 @@
+================================================================================
+ HEALOS: GENESIS TECH-STACK & ENVIRONMENT SPECIFICATION
+================================================================================
+
+This document outlines the current local system environment check, the installed
+packages in the project workspace, and the architectural APIs / tools recommended
+for building our "God-Level" Healthcare & AIML visualization platform.
+
+--------------------------------------------------------------------------------
+1. LOCAL ENVIRONMENT CHECK (DETECTED ON MACHINE)
+--------------------------------------------------------------------------------
+Your machine is exceptionally well-equipped for full-stack and advanced client/server development:
+
+* Node.js: v24.16.0 (Installed at D:\nodejs)
+* NPM: 11.13.0
+* Git: git.exe detected (D:\Git)
+* VS Code: code.cmd detected (D:\Microsoft VS Code)
+* Python: 3.14.5 (Installed at D:\python)
+* Pip: 26.1.1 (Installed at D:\python)
+* Docker Desktop: Docker is installed and running
+* Postman: Detected in LocalAppData (ready for API testing)
+* MongoDB & Compass: Detected in LocalAppData (ready for local database persistence)
+
+SUMMARY:
+Your machine has all core software installed! You do not need to manually install VS Code, Postman, Node, Docker, Git, Python, or MongoDB. They are already present and fully configured in your environment.
+
+--------------------------------------------------------------------------------
+2. PACKAGES INSTALLED IN THE REACT/VITE WORKSPACE
+--------------------------------------------------------------------------------
+We have successfully installed the following packages in the project (compatible with React 19):
+
+* WebGL & 3D Graphics:
+  - `three` (v0.185.1): Core WebGL library for procedural 3D math and shaders.
+  - `@react-three/fiber` (v9.6.1): React wrapper for declarative Three.js integration.
+  - `@react-three/drei` (v10.7.7): Out-of-the-box WebGL helpers, camera rigs, and math.
+
+* High-End Animation:
+  - `gsap` (v3.15.0): GreenSock Animation Platform for buttery-smooth timeline orchestration.
+  - `@gsap/react` (v2.1.2): React hooks for GSAP to handle clean mounting/unmounting lifecycle animations.
+  - `canvas-confetti` (v1.9.4): Interactive pixel bursts for celebratory user flows.
+
+* State Management & Telemetry Flow:
+  - `zustand` (v5.0.14): Extremely light, fast state engine. Ideal for syncing 3D canvas render loops, sound state, and diagnostic panel UI without triggering heavy React component renders.
+
+* AI & API Integration:
+  - `@google/generative-ai` (v0.24.1): Official SDK for Google Gemini to drive complex clinical reasoning.
+
+* Visual Assets & Icons:
+  - `lucide-react` (v1.23.0): Minimalist, SVG-based modern clinical/science icons.
+
+--------------------------------------------------------------------------------
+3. RECOMMENDED MANUAL INSTALLATIONS (IF REQUIRED FOR FULL STACK)
+--------------------------------------------------------------------------------
+* Anaconda / Miniconda (Optional): If you plan to run local Python AIML models (e.g. PyTorch, Hugging Face transformers) instead of calling cloud APIs.
+* MongoDB Community Server: Ensure the local service is running if you choose to store patient records or telemetry data locally. MongoDB Compass is already installed to explore the data.
+
+--------------------------------------------------------------------------------
+4. STRATEGIC APIs & DATA SOURCES (FOR CLINICAL & DATA RICHNESS)
+--------------------------------------------------------------------------------
+To make this project stand out in "Technical Complexity" and "Innovation", we suggest integrating/mocking these APIs:
+
+* Artificial Intelligence & Clinical Inference:
+  - Google Gemini API: For advanced conversational clinical analysis, differential diagnosis suggestions, and multi-agent simulation reasoning.
+  - Web Speech API (Browser Native): For real-time, zero-dependency voice command and clinical narration (e.g., doctor speaks symptoms, app parses them on-the-fly).
+
+* Real-Time Telemetry & Medical Datasets (For live streams):
+  - PhysioNet MIMIC-IV Database (Open Database): We can bundle pre-compiled actual patient ECG, EEG, and EMG wave signal files to stream onto our custom HTML5 CRT-telemetry canvas, rather than just showing simple random sine waves.
+  - OpenFDA API (Public API): To pull real-time drug interaction warnings, labels, and chemical compounds dynamically when the AI recommends a treatment.
+  - Disease.sh API / World Health Organization APIs: For real-time global epidemiological telemetry dashboard displays.
+
+--------------------------------------------------------------------------------
+5. GOD-LEVEL UI & MOTION CONCEPT: "HEALOS" (THE NEURAL-TELEMETRY TERMINAL)
+--------------------------------------------------------------------------------
+We will bypass the typical web app patterns. The experience will feel like a high-end cybernetic medical console, combining clinical precision with organic visual magic.
+
+A. The Visual Concept: "The Bio-Helix Resonance Field"
+   - No generic particle templates or default spheres.
+   - We will write a custom GLSL vertex shader that creates an interactive 3D DNA helix that dynamically morphs into neural pathways, cardiovascular loops, or bone structures based on current telemetry focus.
+   - The particles will be styled as "biometric filaments" that flow along mathematical Lorenz attractors or fluid-vector fields, changing speed based on patient heart rate.
+
+B. Interactive UI Mechanics:
+   - "Frosted Clinical Glass" (Glassmorphism with extreme backdrop-filter, neon borders, and micro-grid patterns).
+   - "Synthesizer Controls" (Sleek slider decks to manually tweak genetic markers, cellular frequency, or neurotransmitters, showing the 3D grid and medical warnings changing live).
+   - Web Audio Soundscape: A low humming ambient clinical tone, plus crisp clicks and sweeps synthesized on the fly using the Web Audio API.
+
+C. Multi-Agent AI Debate Arena:
+   - When diagnosing, the app will display a neural node network diagram where separate medical AI agents (e.g., Cardiologist, Toxicologist, Geneticist) communicate, sending glowing data pulses between nodes.
+   - The user watches the consensus grow in real-time, accompanied by clinical data feeds scrolling in monospace text on the margins.
+================================================================================

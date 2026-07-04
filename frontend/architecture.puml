@@ -1,0 +1,85 @@
+@startuml
+skinparam backgroundColor #0D0E15
+skinparam ArrowColor #00F2FE
+skinparam LineColor #00F2FE
+skinparam GroupInheritance 2
+skinparam BoxPadding 10
+skinparam ParticipantPadding 10
+
+skinparam database {
+  BackgroundColor #1A1B26
+  BorderColor #7F00FF
+  FontColor #E2E8F0
+  FontSize 12
+}
+
+skinparam node {
+  BackgroundColor #1A1B26
+  BorderColor #00F2FE
+  FontColor #E2E8F0
+  FontSize 12
+}
+
+skinparam component {
+  BackgroundColor #1E2235
+  BorderColor #7F00FF
+  FontColor #F1F5F9
+  FontSize 12
+}
+
+skinparam interface {
+  BackgroundColor #0D0E15
+  BorderColor #00F2FE
+}
+
+header HEALOS / AETHERIS SYSTEM ARCHITECTURAL BLUEPRINT
+footer Page 1/1 - System Flow Specification
+
+box "Client / Frontend Layer (Vite + React 19)" #11121C
+  [Executive UI Dashboard] as UI
+  [Interactive Telemetry Canvas] as Canvas
+  [Zustand Local Store] as Store
+  [AudioSynth Core] as Sound
+end box
+
+box "Backend API Server Layer (Node.js)" #161725
+  [Vite Express Gateway] as Backend
+  [WebSocket Live Server] as WS
+  [Telemetry Pipeline Controller] as Telemetry
+end box
+
+box "Knowledge & Storage Layer" #1F2030
+  database "MongoDB (User & Org Records)" as Mongo
+  database "Vector DB (Local Chroma / Pinecone)" as VectorDB
+end box
+
+box "High-Level AI Interface (Detailed in Separate Diagram)" #1A122C
+  node "AI Swarm Gateway" as AISwarm
+end box
+
+box "External Integrations & Actions" #12202C
+  [Third-Party Services\n(Meta Ads, SendGrid, Stripe)] as ThirdParty
+end box
+
+' Flow Relationships
+UI --> Store : Read/Write Local State
+UI --> Canvas : Draw Telemetry & Simulations
+UI --> Sound : Play Interactive Sweeps / Alerts
+
+Store <--> Backend : HTTPS REST APIs (Auth, Configs)
+Store <--> WS : Real-Time Telemetry Socket Feed
+
+Backend --> WS : Sync Active Pipelines
+Backend --> Telemetry : Stream Diagnostic Sessions
+Telemetry --> Mongo : Fetch Business Records
+Telemetry --> VectorDB : Fetch Context via Semantic Search (RAG)
+
+' AI Interface Point
+Backend <--> AISwarm : Post Query Tasks / Fetch Consensus Decisions
+AISwarm --> VectorDB : Perform Context Ingestion (RAG Sync)
+
+' Third-party Rollouts
+AISwarm --> ThirdParty : Execute Self-Healing Playbooks (Campaigns, Mail)
+Backend --> ThirdParty : Transactional Actions & Billing
+
+@endum

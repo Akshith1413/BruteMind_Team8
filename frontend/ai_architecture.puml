@@ -1,0 +1,95 @@
+@startuml
+skinparam backgroundColor #0D0E15
+skinparam ArrowColor #00F2FE
+skinparam LineColor #7F00FF
+skinparam BoxPadding 10
+skinparam ParticipantPadding 8
+
+skinparam database {
+  BackgroundColor #1A1B26
+  BorderColor #7F00FF
+  FontColor #E2E8F0
+}
+
+skinparam node {
+  BackgroundColor #1E2235
+  BorderColor #00F2FE
+  FontColor #F1F5F9
+}
+
+skinparam queue {
+  BackgroundColor #1A1B26
+  BorderColor #00F2FE
+  FontColor #E2E8F0
+}
+
+header HEALOS / AETHERIS AI AGENTIC SWARM ARCHITECTURE
+footer Page 1/1 - Agentic Consensus & RAG Loop
+
+box "Ingress & Memory Layer" #11121C
+  [User Intent / Doc Upload] as Input
+  database "Vector DB (RAG Context)" as VectorDB
+  [Data Analyst Agent] as AnalystAgent
+end box
+
+box "The Autonomous Boardroom (Swarm Swarm Core)" #1C122C
+  node "CEO Agent (Moderator)" as CEO
+  node "CFO Agent (Finance Guard)" as CFO
+  node "CMO Agent (Marketing Copy)" as CMO
+  node "CSO Agent (Sales Pipelines)" as CSO
+  node "COO Agent (Operation Auditor)" as COO
+  node "Legal & Compliance (Risk Shield)" as Legal
+  node "R&D Agent (Competitor Intel)" as RD
+  node "Customer Success (CS Agent)" as CS
+  node "HR & Talent Agent" as HR
+end box
+
+box "Consensus & Ledger Layer" #161725
+  queue "Semantic Consensus Ledger" as Ledger
+end box
+
+box "Simulation & Execution Layer" #12202C
+  database "Synthetic Buyer Sandbox\n(30 Virtual Persona Agents)" as Sandbox
+  [Campaign & API Rollout Gateway] as Gateway
+end box
+
+' Flow mappings
+Input --> AnalystAgent : Parse company documents
+AnalystAgent --> VectorDB : Generate & write embeddings
+VectorDB --> CEO : Pull company DNA context (RAG Query)
+
+' Boardroom convening
+CEO --> CMO : Convene Marketing Strategy
+CEO --> CSO : Convene Sales Pipelines
+CEO --> CFO : Enforce Budget caps
+
+' Supportive contexts
+RD --> CEO : Provide competitive benchmarks
+CS --> CEO : Provide customer churn risk context
+HR --> CEO : Provide workload & capability limits
+
+' Proposal & Review
+CMO --> Legal : Submit ad copy & target channels
+CSO --> Legal : Submit email outreach flows
+Legal --> Ledger : Flag compliance risks (Pass/Veto)
+
+' Consensus Loop
+CMO --> Ledger : Propose LinkedIn Ad spend
+CSO --> Ledger : Propose Cold email sequence
+CFO --> Ledger : Audit proposal costs against margins (Approve/Reject)
+COO --> Ledger : Check deployment timeline bottlenecks
+
+' Ledger Evaluation
+Ledger --> CEO : Evaluate Board Votes (Consensus Protocol)
+alt Consensus Denied (CFO/Legal Veto)
+  CEO --> CMO : Order strategy adjustment (Feedback loop)
+else Consensus Approved
+  CEO --> Gateway : Sign off Growth Protocol
+end
+
+' Execution and Simulation Feedback
+Gateway --> Sandbox : Feed active campaigns
+Sandbox --> AnalystAgent : Feed conversion logs (Telemetry loop)
+Sandbox --> CS : Stream customer satisfaction reviews
+
+@endum

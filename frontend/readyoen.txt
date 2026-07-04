@@ -1,0 +1,41 @@
+================================================================================
+ AETHERIS OS: SYSTEM SPECIFICATIONS & AGENT ARCHITECTURES (EXPANDED)
+================================================================================
+
+This document details the functional specifications for the 10-Agent Autonomous 
+Syndicate, mapping out the system flows, RAG integration, and visual metrics.
+
+--------------------------------------------------------------------------------
+1. FULL SYSTEM PIPELINE (THE 5D LOOPS)
+--------------------------------------------------------------------------------
+* DISCOVER (Onboarding & Data Ingest):
+  - User uploads files (PDF, CSV) or types company data.
+  - Data Analyst Agent parses data, runs embeddings, and saves to Vector Store.
+  - Generates the "Business DNA Profile."
+
+* DESIGN (Swarm Consensus Boardroom):
+  - CEO Agent opens a Boardroom session.
+  - 10 specialized agents debate strategy using the Consensus Voting Ledger.
+  - Generates the unified Growth Protocol strategy.
+
+* DELIVER (Campaign Production & Rollout):
+  - CMO and CSO turn directives into active content, ads, and pipeline rules.
+  - Legal & Compliance checks assets. Returns approved signatures.
+
+* DEVELOP (Synthetic Sandbox & Telemetry Monitoring):
+  - The deployed assets are simulated against a sandbox of 30 virtual buyer agents.
+  - Real-time conversion logs feed back into the Data Analyst Agent.
+
+* DOMINATE (The Executive Dashboard & Crisis Control Room):
+  - The CEO dashboard displays the 9 required metrics, alerts, and crisis buttons.
+  - Contains the AI Copilot for interactive natural language queries.
+
+--------------------------------------------------------------------------------
+2. TECHNICAL ARCHITECTURE SPECIFICATION
+--------------------------------------------------------------------------------
+* FRONTEND: Vite + React 19 + custom CSS Grid layouts + custom Canvas.
+* BACKEND (Orchestration): Node.js/Python API hosting agent state-machines.
+* AGENT COMMUNICATOR: JSON payload exchanges representing agent "voice, thoughts, vote."
+* KNOWLEDGE STORE: Vector database indexing company context for local RAG retrieval.
+* DASHBOARD GRAPHICS: Recharts + Custom HTML5 Canvas telemetry wave feeds.
+================================================================================
