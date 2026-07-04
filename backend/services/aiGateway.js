@@ -108,3 +108,5 @@ export function parseJSONResponse(text) {
     throw new Error('Model response did not contain valid JSON content.');
   }
 }
+
+// Refactor: optimize NIM request payload headers
