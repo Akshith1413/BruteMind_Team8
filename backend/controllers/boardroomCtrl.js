@@ -222,3 +222,5 @@ export async function runBoardroomDebate(context, emitPacket) {
 // Refactor: stage 1 assessment variables
 
 // Refactor: negotiation loop objections mapping
+
+// Refactor: boardroom session mongo documents structure
