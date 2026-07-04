@@ -168,3 +168,5 @@ export default function registerSocketCoordinator(io) {
     });
   });
 }
+
+// Refactor: telemetry stream logs
