@@ -64,3 +64,5 @@ async function startServer() {
 startServer();
 
 // Refactor: format startup console banner
+
+// Refactor: express listener config
