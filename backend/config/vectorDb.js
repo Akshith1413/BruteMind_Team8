@@ -137,3 +137,5 @@ function tokenize(text) {
 }
 
 // Refactor: sync default seeder check
+
+// Refactor: default guidelines formatting
