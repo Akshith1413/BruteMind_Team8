@@ -290,3 +290,5 @@ export async function simulateCampaign(req, res) {
 // Refactor: campaign budget checks
 
 // Refactor: buyer personas seeder check
+
+// Refactor: dashboard simulations aggregation logic
