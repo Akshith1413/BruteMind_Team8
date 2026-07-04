@@ -174,3 +174,5 @@ export function stressTestREST(req, res) {
 }
 
 // Refactor: scale default volatility projections parameters
+
+// Refactor: QRS wave samples check
