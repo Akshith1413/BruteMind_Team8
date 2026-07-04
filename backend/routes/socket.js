@@ -174,3 +174,5 @@ export default function registerSocketCoordinator(io) {
 // Refactor: courtroom packets check
 
 // Refactor: buyer sim ticks delay constant
+
+// Refactor: socket heartbeat and disconnect event cleanups
