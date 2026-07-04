@@ -135,3 +135,5 @@ function tokenize(text) {
     .split(/\s+/)
     .filter(word => word.length > 2 && !stopWords.has(word));
 }
+
+// Refactor: sync default seeder check
