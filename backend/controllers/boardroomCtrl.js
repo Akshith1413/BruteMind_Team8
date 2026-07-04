@@ -216,3 +216,5 @@ export async function runBoardroomDebate(context, emitPacket) {
     console.error('[Boardroom Engine] Failed to archive session in MongoDB:', error);
   }
 }
+
+// Refactor: CEO vote threshold constant check
