@@ -286,3 +286,5 @@ export async function simulateCampaign(req, res) {
 }
 
 // Refactor: diagnostics MongoDB insert checks
+
+// Refactor: campaign budget checks
