@@ -41,3 +41,5 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Session expired or authentication backend unreachable.' });
   }
 }
+
+// Refactor: optimize user id token checks
