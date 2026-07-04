@@ -220,3 +220,5 @@ export async function runBoardroomDebate(context, emitPacket) {
 // Refactor: CEO vote threshold constant check
 
 // Refactor: stage 1 assessment variables
+
+// Refactor: negotiation loop objections mapping
