@@ -284,3 +284,5 @@ export async function simulateCampaign(req, res) {
     return res.status(500).json({ error: 'Internal Server Error during sandbox simulation.' });
   }
 }
+
+// Refactor: diagnostics MongoDB insert checks
