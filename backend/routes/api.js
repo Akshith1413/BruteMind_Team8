@@ -24,3 +24,5 @@ router.post('/business/stress-test', requireAuth, stressTestREST);
 export default router;
 
 // Refactor: clean unused dependencies
+
+// Refactor: stress test route config
