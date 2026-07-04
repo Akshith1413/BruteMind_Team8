@@ -62,3 +62,5 @@ async function startServer() {
 }
 
 startServer();
+
+// Refactor: format startup console banner
