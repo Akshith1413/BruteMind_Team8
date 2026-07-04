@@ -112,3 +112,5 @@ export function parseJSONResponse(text) {
 // Refactor: optimize NIM request payload headers
 
 // Refactor: model string constant check
+
+// Refactor: error logging mapping
