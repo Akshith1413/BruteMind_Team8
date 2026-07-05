@@ -60,9 +60,12 @@ export default function registerSocketCoordinator(io) {
     });
 
     // Animated Synthetic Buyer Sandbox Ticks Ingress
-    socket.on('trigger_buyer_simulation', async (campaignId) => {
+    socket.on('trigger_buyer_simulation', async (payload) => {
       try {
-        console.log(`[Socket.io] Client triggered buyer simulation: ${campaignId}`);
+        const campaignId = typeof payload === 'string' ? payload : payload.campaignId;
+        const mode = (typeof payload === 'object' && payload.mode) ? payload.mode : 'healthcare';
+
+        console.log(`[Socket.io] Client triggered buyer simulation: ${campaignId} [Mode: ${mode}]`);
         const db = getDB();
         
         // Fetch target campaign
@@ -76,9 +79,14 @@ export default function registerSocketCoordinator(io) {
         const buyerCount = await db.collection('buyer_personas').countDocuments();
         if (buyerCount === 0) {
           const seedBuyers = [];
-          const roles = ['Biotech Venture Investor', 'Clinical Director', 'Molecular Biochemist', 'Health System CIO', 'SaaS Operations Director', 'Hospital Procurement Officer', 'Laboratory Director', 'Oncology Department Head', 'Hospital Network CFO', 'Genetic Counselor'];
+          const roles = mode === 'enterprise' 
+            ? ['Venture Capitalist', 'VP of Operations', 'Product Manager', 'Enterprise CIO', 'SaaS Procurement', 'HR Director', 'Head of Sales', 'Chief Marketing Officer', 'Finance VP', 'Data Scientist']
+            : ['Biotech Venture Investor', 'Clinical Director', 'Molecular Biochemist', 'Health System CIO', 'SaaS Operations Director', 'Hospital Procurement Officer', 'Laboratory Director', 'Oncology Department Head', 'Hospital Network CFO', 'Genetic Counselor'];
           const channels = ['LinkedIn', 'Direct Email', 'SEO Outbound', 'Clinical Seminars'];
-          const painPoints = ['regulatory audits', 'onboarding delays', 'system budget constraints', 'data security', 'patient churn', 'hipaa validation'];
+          
+          const painPoints = mode === 'enterprise'
+            ? ['budget constraints', 'low conversion rates', 'high churn', 'poor data visibility', 'slow onboarding', 'security compliance']
+            : ['regulatory audits', 'onboarding delays', 'system budget constraints', 'data security', 'patient churn', 'hipaa validation'];
 
           for (let i = 1; i <= 30; i++) {
             seedBuyers.push({
@@ -107,7 +115,8 @@ export default function registerSocketCoordinator(io) {
           if (campaign.channels.includes(buyer.channelPreference)) {
             probability += 0.15;
           }
-          const hasPainPointMatch = campaign.copyTemplate.toLowerCase().includes(buyer.painPoint.toLowerCase());
+          const copyText = (campaign.copyTemplate || '').toLowerCase();
+          const hasPainPointMatch = copyText.includes((buyer.painPoint || '').toLowerCase());
           if (hasPainPointMatch) {
             probability += 0.10;
           }

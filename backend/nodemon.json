@@ -1,0 +1,10 @@
+{
+  "ignore": [
+    "*.zip",
+    "*.log",
+    "*.test.js",
+    "verify_*.js",
+    "node_modules/"
+  ],
+  "ext": "js,mjs,cjs,json"
+}

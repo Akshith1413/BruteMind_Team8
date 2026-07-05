@@ -96,26 +96,26 @@ export async function login(req, res) {
     const db = getDB();
     const usersCollection = db.collection('users');
 
-    // Handle sandbox bypass (admin@healos.ai / PIN 1234)
+    // Handle sandbox bypass (admin@aetheris.ai / PIN 1234)
     // If they don't exist in Supabase/MongoDB, we auto-create them to prevent demo failures!
-    if (email.toLowerCase() === 'admin@healos.ai' && pin === '1234') {
-      const existingAdmin = await usersCollection.findOne({ email: 'admin@healos.ai' });
+    if (email.toLowerCase() === 'admin@aetheris.ai' && pin === '1234') {
+      const existingAdmin = await usersCollection.findOne({ email: 'admin@aetheris.ai' });
       if (!existingAdmin) {
-        console.log('Seeding default sandbox clinician...');
+        console.log('Seeding default sandbox administrator...');
         try {
           const { data: adminAuth, error: adminAuthErr } = await supabase.auth.admin.createUser({
-            email: 'admin@healos.ai',
+            email: 'admin@aetheris.ai',
             password: '1234',
             email_confirm: true,
-            user_metadata: { username: 'Dr. Alex Vance', specialty: 'Genomic Specialist' }
+            user_metadata: { username: 'Alex Vance', specialty: 'Orchestration Leader (CEO)' }
           });
 
           if (!adminAuthErr) {
             await usersCollection.insertOne({
               supabase_uid: adminAuth.user.id,
-              username: 'Dr. Alex Vance',
-              email: 'admin@healos.ai',
-              specialty: 'Genomic Specialist',
+              username: 'Alex Vance',
+              email: 'admin@aetheris.ai',
+              specialty: 'Orchestration Leader (CEO)',
               pin: '1234',
               created_at: new Date()
             });

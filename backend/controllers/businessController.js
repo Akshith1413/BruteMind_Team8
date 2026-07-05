@@ -63,17 +63,19 @@ export async function getDashboardStats(req, res) {
       : 0;
 
     return res.status(200).json({
-      stats: {
-        totalClinicians: totalUsers,
-        totalDebatesRun: totalSessions,
-        ragMemorySegments: totalMemorySegments,
-        marketingCampaigns: totalCampaigns,
-        consensusApprovalRatio: approvalRatio,
-        systemHealthIndex: diagnosticHealthScore,
-        totalSimulationsRun: totalSimulations,
-        simulatedRevenue: totalSimulatedRevenue,
-        avgConversionRate
-      }
+      healthScore: diagnosticHealthScore,
+      growthScore: 60 + (totalCampaigns * 5) + (totalSimulations * 2),
+      revenue: totalSimulatedRevenue > 0 ? totalSimulatedRevenue : 142,
+      burnRate: 30 + (totalSessions * 2),
+      cac: totalSimulations > 0 ? Math.floor(1000 / totalSimulations) : 120,
+      ltv: totalSimulatedRevenue > 0 ? totalSimulatedRevenue * 3 : 2800,
+      nps: Math.round(70 + (approvalRatio * 20)),
+      pipelineValue: (totalCampaigns * 150) + 200,
+      riskIndex: Math.round(Math.max(10, 50 - (approvalRatio * 40))),
+      // Extra fields for Analytics
+      avgConversionRate: avgConversionRate,
+      marketingCampaigns: totalCampaigns,
+      totalSimulationsRun: totalSimulations
     });
 
   } catch (error) {
@@ -197,11 +199,16 @@ export async function simulateCampaign(req, res) {
     // Seed 30 buyer personas if not seeded yet
     const buyerCount = await db.collection('buyer_personas').countDocuments();
     if (buyerCount === 0) {
-      console.log('[Buyer Sandbox] Seeded 30 synthetic buyer personas successfully.');
+      const mode = req.body.mode || 'healthcare';
+      console.log(`[Buyer Sandbox] Seeding 30 synthetic buyer personas [Mode: ${mode}]...`);
       const seedBuyers = [];
-      const roles = ['Biotech Venture Investor', 'Clinical Director', 'Molecular Biochemist', 'Health System CIO', 'SaaS Operations Director', 'Hospital Procurement Officer', 'Laboratory Director', 'Oncology Department Head', 'Hospital Network CFO', 'Genetic Counselor'];
+      const roles = mode === 'enterprise' 
+        ? ['Venture Capitalist', 'VP of Operations', 'Product Manager', 'Enterprise CIO', 'SaaS Procurement', 'HR Director', 'Head of Sales', 'Chief Marketing Officer', 'Finance VP', 'Data Scientist']
+        : ['Biotech Venture Investor', 'Clinical Director', 'Molecular Biochemist', 'Health System CIO', 'SaaS Operations Director', 'Hospital Procurement Officer', 'Laboratory Director', 'Oncology Department Head', 'Hospital Network CFO', 'Genetic Counselor'];
       const channels = ['LinkedIn', 'Direct Email', 'SEO Outbound', 'Clinical Seminars'];
-      const painPoints = ['regulatory audits', 'onboarding delays', 'system budget constraints', 'data security', 'patient churn', 'hipaa validation'];
+      const painPoints = mode === 'enterprise'
+        ? ['budget constraints', 'low conversion rates', 'high churn', 'poor data visibility', 'slow onboarding', 'security compliance']
+        : ['regulatory audits', 'onboarding delays', 'system budget constraints', 'data security', 'patient churn', 'hipaa validation'];
 
       for (let i = 1; i <= 30; i++) {
         seedBuyers.push({
@@ -232,7 +239,7 @@ export async function simulateCampaign(req, res) {
       }
       
       // Pain-point copy matching boost
-      const hasPainPointMatch = campaign.copyTemplate.toLowerCase().includes(buyer.painPoint.toLowerCase());
+      const hasPainPointMatch = (campaign.copyTemplate || '').toLowerCase().includes((buyer.painPoint || '').toLowerCase());
       if (hasPainPointMatch) {
         probability += 0.10;
       }

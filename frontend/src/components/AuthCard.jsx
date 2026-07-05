@@ -84,27 +84,30 @@ export default function AuthCard() {
     AudioSynth.playTransition();
 
     const scanSteps = [
-      { progress: 20, status: 'SYNCING CLINICAL REGISTRIES...' },
-      { progress: 50, status: 'RETRIEVING BIOMETRIC KEYPAIRS...' },
-      { progress: 80, status: 'VALIDATING SECURE CREDENTIALS...' },
-      { progress: 100, status: 'ACCESS AUTHORIZED. HEALOS ONLINE.' },
+      { progress: 20, status: 'ESTABLISHING SWARM INTERCONNECT...' },
+      { progress: 50, status: 'RETRIEVING DECENTRALIZED IDENTITY CONTEXT...' },
+      { progress: 80, status: 'DECRYPTING MULTI-AGENT LEDGER...' },
+      { progress: 100, status: 'ACCESS AUTHORIZED. CORTEX OS ONLINE.' },
     ];
 
     try {
       // Loop over scanning progress
       for (const step of scanSteps) {
         await new Promise((resolve) => {
-          const timeout = setTimeout(() => {
+          setTimeout(() => {
             setScanProgress(step.progress);
             setScanStatus(step.status);
             // Quick hover chime on progress tick
             AudioSynth.playHover();
             resolve();
-          }, 450);
+          }, 1500); // 1.5s per step * 4 = 6s
         });
       }
 
-      // Execute actual authentication
+      // Wait an additional 4 seconds after 100% to let the user admire the terminal screen
+      await new Promise((resolve) => setTimeout(resolve, 4000)); // Total = 10s
+
+      // Execute actual authentication (redirects to dashboard)
       if (isLogin) {
         await login(email, pin);
       } else {
@@ -137,7 +140,7 @@ export default function AuthCard() {
         <div className="control-bar">
           <div className="system-tag text-mono">
             <Cpu size={14} className="sys-icon spinner" />
-            <span>HEALOS v1.0.4 // LOCALHOST</span>
+            <span>CORTEX v2.0.0 // SECURE NODE</span>
           </div>
           <div className="actions">
             <button 
@@ -175,12 +178,12 @@ export default function AuthCard() {
           <div ref={formContainerRef}>
             <div className="card-header">
               <h2 className="text-tech glow-text">
-                {isLogin ? 'CLINICAL INGRESS' : 'DIAGNOSTIC ENROLLMENT'}
+                {isLogin ? 'SWARM GATEWAY INGRESS' : 'NEW NODE ENROLLMENT'}
               </h2>
               <p className="card-subtitle">
                 {isLogin 
-                  ? 'Input authorization keypair to load diagnostic cores.' 
-                  : 'Enroll in the biometric registry to start modeling clinical pipelines.'}
+                  ? 'Input authorization keypair to handshake with the Swarm Core.' 
+                  : 'Enroll in the decentralized Swarm registry to start modeling corporate pipelines.'}
               </p>
             </div>
 
@@ -205,7 +208,7 @@ export default function AuthCard() {
                     className="tech-input"
                     id="username-field"
                   />
-                  <label htmlFor="username-field" className="input-label">CLINICIAN NAME</label>
+                  <label htmlFor="username-field" className="input-label">OPERATOR NAME</label>
                   <span className="input-glow-line"></span>
                 </div>
               )}
@@ -222,7 +225,7 @@ export default function AuthCard() {
                   className="tech-input"
                   id="email-field"
                 />
-                <label htmlFor="email-field" className="input-label">CLINICAL EMAIL</label>
+                <label htmlFor="email-field" className="input-label">OPERATOR EMAIL</label>
                 <span className="input-glow-line"></span>
               </div>
 
@@ -236,12 +239,12 @@ export default function AuthCard() {
                     className="tech-input tech-select"
                     id="specialty-field"
                   >
-                    <option value="General Diagnostics">General Diagnostics</option>
-                    <option value="Neural Pathologist">Neural Pathologist</option>
-                    <option value="Genomic Specialist">Genomic Specialist</option>
-                    <option value="Cardiovascular Clinician">Cardiovascular Clinician</option>
+                    <option value="Swarm Administrator">Swarm Administrator</option>
+                    <option value="Orchestration Leader (CEO)">Orchestration Leader (CEO)</option>
+                    <option value="Financial Auditor (CFO)">Financial Auditor (CFO)</option>
+                    <option value="Marketing Architect (CMO)">Marketing Architect (CMO)</option>
                   </select>
-                  <label htmlFor="specialty-field" className="input-label">MEDICAL DISCIPLINE</label>
+                  <label htmlFor="specialty-field" className="input-label">SWARM ROLE CLEARANCE</label>
                   <span className="input-glow-line"></span>
                 </div>
               )}
@@ -276,7 +279,7 @@ export default function AuthCard() {
 
               {isLogin && (
                 <div className="sandbox-hint text-mono">
-                  Sandbox Bypass: <strong>admin@healos.ai</strong> / PIN: <strong>1234</strong>
+                  Sandbox Bypass: <strong>admin@cortex.ai</strong> / PIN: <strong>1234</strong>
                 </div>
               )}
 
@@ -286,7 +289,7 @@ export default function AuthCard() {
                 onClick={handleInputClick}
                 className="submit-btn text-tech"
               >
-                <span>{isLogin ? 'DECRYPT & ACCESS' : 'ENROLL CLINICIAN'}</span>
+                <span>{isLogin ? 'HANDSHAKE & ACCESS' : 'REGISTER NODE'}</span>
                 <div className="btn-glitch-overlay"></div>
               </button>
             </form>
@@ -423,7 +426,7 @@ export default function AuthCard() {
         .auth-form {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 28px;
         }
 
         .input-group {
@@ -469,7 +472,7 @@ export default function AuthCard() {
         /* Float Labels */
         .tech-input:focus ~ .input-label,
         .tech-input:not(:placeholder-shown) ~ .input-label {
-          transform: translateY(-25px) scale(0.85);
+          transform: translateY(-30px) scale(0.85);
           left: 6px;
           color: var(--accent-primary);
           text-shadow: 0 0 8px var(--accent-glow);

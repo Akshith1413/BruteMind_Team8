@@ -38,6 +38,20 @@
 
   /* UI Specifics */
   --card-noise: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+  /* Engine / Agent Component Colors (Dark Theme) */
+  --color-ceo: #00f2fe;
+  --color-cfo: #f97316;
+  --color-cmo: #a855f7;
+  --color-cso: #22d3ee;
+  --color-coo: #f43f5e;
+  --color-rnd: #84cc16;
+  --color-cs: #fbbf24;
+  --color-legal: #e879f9;
+  --color-hr: #2dd4bf;
+  --color-data: #60a5fa;
+  --color-sim-blue: #00f2fe;
+  --color-hr-value: #00f2fe;
 }
 
 /* Light Theme: Holographic Clinical */
@@ -66,6 +80,20 @@
   --neumorphic-press: inset 0 3px 6px rgba(0,0,0,0.06), 0 1px 1px rgba(255,255,255,0.9);
 
   --card-noise: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.01) 1px, transparent 1px);
+
+  /* Engine / Agent Component Colors (Light Theme - Darkened for contrast) */
+  --color-ceo: #0284c7;
+  --color-cfo: #c2410c;
+  --color-cmo: #7e22ce;
+  --color-cso: #0369a1;
+  --color-coo: #be123c;
+  --color-rnd: #4d7c0f;
+  --color-cs: #b45309;
+  --color-legal: #a21caf;
+  --color-hr: #0f766e;
+  --color-data: #1d4ed8;
+  --color-sim-blue: #0284c7;
+  --color-hr-value: #0369a1;
 }
 
 /* Core Resets */
