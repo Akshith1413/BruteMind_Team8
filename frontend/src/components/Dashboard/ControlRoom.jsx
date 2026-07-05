@@ -27,10 +27,10 @@ const METRIC_DEFS = [
   { key: 'riskIndex',      label: 'RISK INDEX',      icon: ShieldAlert, unit: '%',  color: '#ef4444' },
 ];
 
-/* ── mock stats fallback ─────────────────────────────────── */
-const MOCK_STATS = {
-  healthScore: 87, growthScore: 64, revenue: 142, burnRate: 38,
-  cac: 120, ltv: 2800, nps: 72, pipelineValue: 580, riskIndex: 23,
+/* ── default stats (shown before any data is onboarded) ──── */
+const DEFAULT_STATS = {
+  healthScore: 0, growthScore: 0, revenue: 0, burnRate: 0,
+  cac: 0, ltv: 0, nps: 0, pipelineValue: 0, riskIndex: 0,
 };
 
 export default function ControlRoom() {
@@ -44,15 +44,20 @@ export default function ControlRoom() {
   const termBodyRef = useRef(null);
   const [logs, setLogs] = useState([]);
 
-  const stats = dashboardStats || MOCK_STATS;
-  const health = latestTelemetry?.systemHealth ?? stats.healthScore ?? 87;
+  const stats = dashboardStats || DEFAULT_STATS;
+  const health = latestTelemetry?.systemHealth ?? stats.healthScore ?? 0;
 
   /* ── Fetch dashboard stats periodically ────────────────────── */
   useEffect(() => {
     const fetchStats = () => {
       api.get('/business/dashboard-stats')
         .then(setDashboardStats)
-        .catch(() => setDashboardStats(MOCK_STATS));
+        .catch(() => {
+          // Only set defaults if we have no data yet
+          if (!useDashboardStore.getState().dashboardStats) {
+            setDashboardStats(DEFAULT_STATS);
+          }
+        });
     };
     fetchStats();
     const interval = setInterval(fetchStats, 5000);

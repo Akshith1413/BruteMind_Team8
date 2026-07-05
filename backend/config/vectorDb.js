@@ -46,7 +46,7 @@ export async function syncMemoryIndex() {
  * @param {string} filename Name of file
  * @param {string} content Raw text content
  */
-export async function ingestDocument(filename, content) {
+export async function ingestDocument(filename, content, userId) {
   const chunks = content
     .split(/\n\s*\n/) // Split by double newlines (paragraphs)
     .map(c => c.trim())
@@ -54,6 +54,7 @@ export async function ingestDocument(filename, content) {
 
   const segments = chunks.map((chunk, idx) => ({
     id: `${filename}_chunk_${idx}`,
+    userId,
     filename,
     content: chunk,
     terms: tokenize(chunk),
@@ -63,40 +64,55 @@ export async function ingestDocument(filename, content) {
   try {
     const db = getDB();
     await db.collection('memory_segments').insertMany(segments);
-    await syncMemoryIndex();
   } catch (err) {
     console.warn('[RAG Memory] Failed to save chunks to MongoDB. Indexing in memory cache only.');
     documentIndex.push(...segments);
   }
 
-  console.log(`[RAG Memory] Ingested "${filename}" - created ${segments.length} chunks.`);
+  console.log(`[RAG Memory] Ingested "${filename}" for user ${userId} - created ${segments.length} chunks.`);
   return segments.length;
 }
 
 /**
- * Query index using TF-IDF similarity algorithm
+ * Query index using TF-IDF similarity algorithm, scoped by user
  * @param {string} query Search terms
+ * @param {string} userId Scoping user ID
  * @param {number} limit Maximum results to return
  * @returns {Array} List of matched document fragments
  */
-export function queryMemory(query, limit = 3) {
+export async function queryMemory(query, userId, limit = 3) {
   const queryTerms = tokenize(query);
-  if (queryTerms.length === 0 || documentIndex.length === 0) return [];
+  if (queryTerms.length === 0) return [];
+
+  const db = getDB();
+  let segments = [];
+  try {
+    segments = await db.collection('memory_segments').find({ userId }).toArray();
+    if (segments.length === 0) {
+      // Fallback to default clinical guidelines (which have no userId)
+      segments = await db.collection('memory_segments').find({ userId: { $exists: false } }).toArray();
+    }
+  } catch (err) {
+    console.warn('[RAG Memory] Failed to fetch segments from database:', err);
+    segments = documentIndex.filter(doc => doc.userId === userId || !doc.userId);
+  }
+
+  if (segments.length === 0) return [];
 
   // TF-IDF Calculation
-  const docCount = documentIndex.length;
+  const docCount = segments.length;
   
   // Calculate document frequencies (DF) for each query term
   const df = {};
   queryTerms.forEach(term => {
     let count = 0;
-    documentIndex.forEach(doc => {
+    segments.forEach(doc => {
       if (doc.terms.includes(term)) count++;
     });
     df[term] = count;
   });
 
-  const scoredDocs = documentIndex.map(doc => {
+  const scoredDocs = segments.map(doc => {
     let score = 0;
     
     queryTerms.forEach(term => {

@@ -105,7 +105,7 @@ export async function runBoardroomDebate(context, emitPacket) {
 
   // Query RAG context using local TF-IDF memory index
   console.log('[Boardroom Engine] Querying TF-IDF RAG Memory...');
-  const matchedDocs = queryMemory(directive, 3);
+  const matchedDocs = await queryMemory(directive, context.userId, 3);
   let groundingContext = 'No document context matched this query.';
   if (matchedDocs.length > 0) {
     groundingContext = matchedDocs.map(d => `[Source: ${d.filename}] (Score: ${d.score}) ${d.content}`).join('\n\n');
@@ -124,17 +124,35 @@ export async function runBoardroomDebate(context, emitPacket) {
     const speech = await consultAgent(role, directive, groundingContext, results);
     results.push(speech);
     votes[role] = speech.approved;
-    emitPacket({ status: 'AGENT_SPEECH', name: speech.name, avatar: speech.avatar, opinion: speech.opinion, approved: speech.approved });
+    emitPacket({
+      status: 'AGENT_SPEECH',
+      agentName: role,
+      name: speech.name,
+      avatar: speech.avatar,
+      opinion: speech.opinion,
+      approved: speech.approved,
+      vote: speech.approved ? 'APPROVE' : 'REJECT'
+    });
   }
 
   // Phase 2: Operations & Data Integration (CSO, COO, R&D, Data Analyst)
   emitPacket({ status: 'STAGE_2_START', message: 'Stage 2: Operations, Science, & Data Integration...' });
   const stage2Roles = ['CSO', 'COO', 'RD', 'DATA_ANALYST'];
   for (const role of stage2Roles) {
+    // Map RD -> R&D, DATA_ANALYST -> DATA to match frontend AGENTS array
+    const agentNameForClient = role === 'RD' ? 'R&D' : role === 'DATA_ANALYST' ? 'DATA' : role;
     const speech = await consultAgent(role, directive, groundingContext, results);
     results.push(speech);
     votes[role] = speech.approved;
-    emitPacket({ status: 'AGENT_SPEECH', name: speech.name, avatar: speech.avatar, opinion: speech.opinion, approved: speech.approved });
+    emitPacket({
+      status: 'AGENT_SPEECH',
+      agentName: agentNameForClient,
+      name: speech.name,
+      avatar: speech.avatar,
+      opinion: speech.opinion,
+      approved: speech.approved,
+      vote: speech.approved ? 'APPROVE' : 'REJECT'
+    });
   }
 
   // Phase 3: Final Verification (CS, HR, CEO)
@@ -144,7 +162,15 @@ export async function runBoardroomDebate(context, emitPacket) {
     const speech = await consultAgent(role, directive, groundingContext, results);
     results.push(speech);
     votes[role] = speech.approved;
-    emitPacket({ status: 'AGENT_SPEECH', name: speech.name, avatar: speech.avatar, opinion: speech.opinion, approved: speech.approved });
+    emitPacket({
+      status: 'AGENT_SPEECH',
+      agentName: role,
+      name: speech.name,
+      avatar: speech.avatar,
+      opinion: speech.opinion,
+      approved: speech.approved,
+      vote: speech.approved ? 'APPROVE' : 'REJECT'
+    });
   }
 
   // Sum approvals
@@ -182,28 +208,38 @@ export async function runBoardroomDebate(context, emitPacket) {
       let newApprovals = totalApprovals;
 
       for (const role of objectingRoles) {
+        const agentNameForClient = role === 'RD' ? 'R&D' : role === 'DATA_ANALYST' ? 'DATA' : role;
         const speech = await consultAgent(role, compromiseDirective, groundingContext, results);
         results.push({ ...speech, isReVote: true });
         votes[role] = speech.approved;
         newApprovals += speech.approved;
-        emitPacket({ status: 'AGENT_SPEECH', name: `${speech.name} (Re-Vote)`, avatar: speech.avatar, opinion: speech.opinion, approved: speech.approved });
+        emitPacket({
+          status: 'AGENT_SPEECH',
+          agentName: agentNameForClient,
+          name: `${speech.name} (Re-Vote)`,
+          avatar: speech.avatar,
+          opinion: speech.opinion,
+          approved: speech.approved,
+          vote: speech.approved ? 'APPROVE' : 'REJECT'
+        });
       }
 
       verdict = newApprovals >= 6 ? 'APPROVED' : 'REJECTED_AFTER_NEGOTIATION';
-      emitPacket({ status: 'DEBATE_COMPLETE', verdict, totalApprovals: newApprovals });
+      emitPacket({ status: 'DEBATE_COMPLETE', type: 'verdict', verdict, totalApprovals: newApprovals });
       console.log(`[Boardroom Engine] Negotiation concluded. Verdict: ${verdict} (${newApprovals}/10 Approvals)`);
     } catch (err) {
       console.error('[Boardroom Engine] Veto Negotiation Loop failed:', err);
-      emitPacket({ status: 'DEBATE_COMPLETE', verdict: 'REJECTED', totalApprovals });
+      emitPacket({ status: 'DEBATE_COMPLETE', type: 'verdict', verdict: 'REJECTED', totalApprovals });
     }
   } else {
-    emitPacket({ status: 'DEBATE_COMPLETE', verdict, totalApprovals });
+    emitPacket({ status: 'DEBATE_COMPLETE', type: 'verdict', verdict, totalApprovals });
   }
 
   // Archive boardroom session in MongoDB Atlas
   try {
     const db = getDB();
     await db.collection('boardroom_sessions').insertOne({
+      userId: context.userId || null,
       directive,
       verdict,
       totalApprovals,

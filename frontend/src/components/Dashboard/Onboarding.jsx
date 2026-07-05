@@ -44,6 +44,18 @@ export default function Onboarding() {
   const profileRef = useRef(null);
   const cloudRef = useRef(null);
 
+  /* ── Fetch profile on mount ────────────────────────────── */
+  useEffect(() => {
+    api.get('/business/profile')
+      .then((profile) => {
+        if (profile && profile.companyName) {
+          setBusinessProfile(profile);
+          setOnboardingStatus('complete');
+        }
+      })
+      .catch((err) => console.warn('No active business profile found yet.', err));
+  }, [setBusinessProfile, setOnboardingStatus]);
+
   /* ── Upload handler ────────────────────────────────────── */
   const handleUpload = useCallback(async (file) => {
     setFileName(file.name);
@@ -69,18 +81,14 @@ export default function Onboarding() {
       setBusinessProfile(result);
       setOnboardingStatus('complete');
       AudioSynth.playSuccess();
+
+      // Immediately refresh dashboard stats so ControlRoom/Analytics update
+      api.get('/business/dashboard-stats')
+        .then(useDashboardStore.getState().setDashboardStats)
+        .catch(console.error);
     } catch (err) {
       console.error('Onboarding upload error:', err);
-      // Fallback to mock success for demo
-      setBusinessProfile({
-        companyName: 'Cortex Corp',
-        industry: 'Enterprise AI & SaaS',
-        size: '50-200 employees',
-        keyMetrics: { revenue: '142K', growth: '23%', nps: 72 },
-        capabilities: ['Multi-Agent AI', 'RAG Pipeline', 'Predictive Analytics', 'Real-Time Telemetry'],
-      });
-      setOnboardingStatus('complete');
-      AudioSynth.playSuccess();
+      setOnboardingStatus('error');
     }
   }, [setOnboardingStatus, setBusinessProfile]);
 

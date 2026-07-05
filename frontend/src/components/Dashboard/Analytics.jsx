@@ -70,17 +70,17 @@ export default function Analytics() {
   }, []);
 
   /* ── Dynamic Data Wiring ──────────────────────────── */
-  const stats = dashboardStats || {};
-  const totalRev = stats.revenue || 284500;
-  const activeCampCount = campaigns?.length || stats.marketingCampaigns || 14;
-  const convRate = stats.avgConversionRate ? (stats.avgConversionRate * 100).toFixed(1) : '18.7';
-  const totalLeads = stats.pipelineValue || 3842;
+  const stats = dashboardStats ?? {};
+  const totalRev = stats.revenue ?? 0;
+  const activeCampCount = campaigns?.length ?? stats.marketingCampaigns ?? 0;
+  const convRate = stats.avgConversionRate != null ? (stats.avgConversionRate * 100).toFixed(1) : '0';
+  const totalLeads = stats.pipelineValue ?? 0;
 
   const KPI_DATA_DYNAMIC = [
-    { label: 'TOTAL REVENUE', value: `$${totalRev.toLocaleString()}`, change: '+12.4%', up: true, icon: DollarSign, color: '#22c55e' },
-    { label: 'ACTIVE CAMPAIGNS', value: activeCampCount.toString(), change: '+3', up: true, icon: Layers, color: 'var(--accent-primary)' },
-    { label: 'CONVERSION RATE', value: `${convRate}%`, change: '+2.1%', up: true, icon: TrendingUp, color: '#a855f7' },
-    { label: 'TOTAL LEADS', value: totalLeads.toLocaleString(), change: '-4.2%', up: false, icon: Users, color: '#f59e0b' },
+    { label: 'TOTAL REVENUE', value: totalRev > 0 ? `$${totalRev.toLocaleString()}` : '$0', change: totalRev > 0 ? '+12.4%' : '--', up: totalRev > 0, icon: DollarSign, color: '#22c55e' },
+    { label: 'ACTIVE CAMPAIGNS', value: activeCampCount.toString(), change: activeCampCount > 0 ? `+${activeCampCount}` : '--', up: activeCampCount > 0, icon: Layers, color: 'var(--accent-primary)' },
+    { label: 'CONVERSION RATE', value: `${convRate}%`, change: parseFloat(convRate) > 0 ? '+2.1%' : '--', up: parseFloat(convRate) > 0, icon: TrendingUp, color: '#a855f7' },
+    { label: 'TOTAL LEADS', value: totalLeads.toLocaleString(), change: totalLeads > 0 ? '+8.3%' : '--', up: totalLeads > 0, icon: Users, color: '#f59e0b' },
   ];
 
   /* ── SVG Bar chart ────────────────────────────────── */

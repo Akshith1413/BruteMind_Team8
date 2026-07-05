@@ -8,6 +8,7 @@ import { getSocket } from '../../utils/socketClient';
 import { AudioSynth } from '../../utils/AudioSynth';
 import gsap from 'gsap';
 import { Brain, Vote, MessageSquare, Zap, Send, Download } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const AGENTS = [
   { id: 'ceo', name: 'CEO', color: 'var(--color-ceo)' },
@@ -29,7 +30,9 @@ export default function Boardroom() {
   const {
     boardroomActive, boardroomLogs, agentVotes, boardroomTopic,
     boardroomFinalVerdict, startBoardroom, addBoardroomPacket, endBoardroom,
+    businessProfile,
   } = useDashboardStore();
+  const { user } = useAuthStore();
 
   const [topic, setTopic] = useState('');
   const [speakingAgent, setSpeakingAgent] = useState(null);
@@ -42,6 +45,9 @@ export default function Boardroom() {
     const onPacket = (packet) => {
       addBoardroomPacket(packet);
       if (packet.agentName) setSpeakingAgent(packet.agentName);
+      if (packet.status === 'DEBATE_COMPLETE') {
+        endBoardroom();
+      }
       AudioSynth.playClick();
       // Clear speaking highlight after delay
       setTimeout(() => setSpeakingAgent(null), 1500);
@@ -71,9 +77,14 @@ export default function Boardroom() {
     if (!topic.trim()) return;
     startBoardroom(topic);
     const socket = getSocket();
-    socket.emit('boardroom_debate_trigger', { topic, businessContext: 'general' });
+    socket.emit('boardroom_debate_trigger', {
+      topic,
+      businessContext: 'general',
+      businessDNA: businessProfile || {},
+      userId: user?.id || null
+    });
     AudioSynth.playTransition();
-  }, [topic, startBoardroom]);
+  }, [topic, startBoardroom, businessProfile, user]);
 
   /* ── GSAP ring entrance ────────────────────────────────── */
   useEffect(() => {

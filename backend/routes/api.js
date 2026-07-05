@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { register, login } from '../controllers/authController.js';
 import { requireAuth } from '../middleware/auth.js';
-import { onboardDocument, getDashboardStats, createCampaign, getCampaigns, getAIDiagnostics, simulateCampaign } from '../controllers/businessController.js';
+import { onboardDocument, getDashboardStats, createCampaign, getCampaigns, getAIDiagnostics, simulateCampaign, getBusinessProfile } from '../controllers/businessController.js';
 import { stressTestREST } from '../controllers/telemetryCtrl.js';
 
 import { strategyEngine, marketingEngine, leadGenEngine, salesEngine, analyticsEngine, customerSuccessEngine } from '../controllers/enginesController.js';
@@ -16,6 +16,7 @@ router.post('/auth/login', login);
 
 // Secured Strategy & Management Routes
 router.post('/business/onboard', requireAuth, upload.single('file'), onboardDocument);
+router.get('/business/profile', requireAuth, getBusinessProfile);
 router.get('/business/dashboard-stats', requireAuth, getDashboardStats);
 router.post('/business/campaigns', requireAuth, createCampaign);
 router.get('/business/campaigns', requireAuth, getCampaigns);

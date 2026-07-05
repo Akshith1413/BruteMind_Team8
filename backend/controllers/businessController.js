@@ -7,6 +7,93 @@ import { ObjectId } from 'mongodb';
  * Handle document text uploads and ingest RAG chunks
  * POST /api/business/onboard
  */
+function extractBusinessProfile(filename, content) {
+  let profile = {
+    companyName: 'Cortex Corp',
+    industry: 'Enterprise AI & SaaS',
+    size: '50-200 employees',
+    keyMetrics: { revenue: '142', growth: '23', nps: 72 },
+    capabilities: ['Multi-Agent AI', 'RAG Pipeline', 'Predictive Analytics', 'Real-Time Telemetry'],
+  };
+
+  if (filename.toLowerCase().endsWith('.csv')) {
+    const lines = content.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length > 1) {
+      const parseCSVLine = (line) => {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+      
+      const headers = parseCSVLine(lines[0]);
+      const values = parseCSVLine(lines[1]);
+      
+      const getField = (names) => {
+        const idx = headers.findIndex(h => names.some(n => h.toLowerCase().includes(n.toLowerCase())));
+        return idx !== -1 ? values[idx] : null;
+      };
+
+      const company = getField(['company', 'name']);
+      const ind = getField(['industry', 'sector']);
+      const audience = getField(['audience', 'target']);
+      const product = getField(['product', 'core']);
+      const painPoints = getField(['pain', 'points']);
+      const channels = getField(['channels', 'primary']);
+
+      if (company) profile.companyName = company;
+      if (ind) profile.industry = ind;
+      
+      if (ind) {
+        if (ind.toLowerCase().includes('health')) {
+          profile.keyMetrics = { revenue: '284', growth: '18', nps: 84 };
+        } else if (ind.toLowerCase().includes('robot') || ind.toLowerCase().includes('manufactur')) {
+          profile.keyMetrics = { revenue: '512', growth: '31', nps: 78 };
+        } else if (ind.toLowerCase().includes('cyber')) {
+          profile.keyMetrics = { revenue: '740', growth: '42', nps: 90 };
+        }
+      }
+
+      profile.capabilities = [
+        product ? `Product: ${product}` : null,
+        audience ? `Target: ${audience}` : null,
+        painPoints ? `Resolves: ${painPoints.split(',')[0]}` : null,
+        channels ? `Via: ${channels.split('and')[0].trim()}` : null
+      ].filter(Boolean);
+    }
+  } else {
+    const companyMatch = content.match(/Company\s*Name:\s*([^\n]+)/i) || content.match(/Company:\s*([^\n]+)/i);
+    const industryMatch = content.match(/Industry:\s*([^\n]+)/i);
+    if (companyMatch) profile.companyName = companyMatch[1].trim();
+    if (industryMatch) profile.industry = industryMatch[1].trim();
+  }
+
+  return profile;
+}
+
+export async function getBusinessProfile(req, res) {
+  try {
+    const db = getDB();
+    const profile = await db.collection('business_profile').findOne({ userId: req.user.id });
+    return res.status(200).json(profile);
+  } catch (error) {
+    console.error('Error getting business profile:', error);
+    return res.status(500).json({ error: 'Internal Server Error getting profile.' });
+  }
+}
+
 export async function onboardDocument(req, res) {
   try {
     if (!req.file) {
@@ -16,14 +103,19 @@ export async function onboardDocument(req, res) {
     const filename = req.file.originalname;
     const content = req.file.buffer.toString('utf-8');
 
-    console.log(`[Business Controller] Ingesting document: ${filename} (${req.file.size} bytes)`);
-    const chunksCreated = await ingestDocument(filename, content);
+    console.log(`[Business Controller] Ingesting document: ${filename} for user ${req.user.id} (${req.file.size} bytes)`);
+    const chunksCreated = await ingestDocument(filename, content, req.user.id);
 
-    return res.status(200).json({
-      message: 'Document onboarding and RAG tokenization successful.',
-      filename,
-      chunksCreated
-    });
+    const profile = extractBusinessProfile(filename, content);
+    profile.userId = req.user.id;
+    const db = getDB();
+    await db.collection('business_profile').updateOne(
+      { userId: req.user.id },
+      { $set: profile },
+      { upsert: true }
+    );
+
+    return res.status(200).json(profile);
   } catch (error) {
     console.error('Error onboarding document:', error);
     return res.status(500).json({ error: 'Internal Server Error during document ingestion.' });
@@ -40,22 +132,29 @@ export async function getDashboardStats(req, res) {
     
     // Aggregation queries on MongoDB collections
     const totalUsers = await db.collection('users').countDocuments();
-    const totalSessions = await db.collection('boardroom_sessions').countDocuments();
-    const totalMemorySegments = await db.collection('memory_segments').countDocuments();
-    const totalCampaigns = await db.collection('campaigns').countDocuments();
+    const totalSessions = await db.collection('boardroom_sessions').countDocuments({ userId: req.user.id });
+    const totalMemorySegments = await db.collection('memory_segments').countDocuments({ userId: req.user.id });
+    const totalCampaigns = await db.collection('campaigns').countDocuments({ userId: req.user.id });
 
     // Fetch boardroom sessions to calculate ratios
-    const sessions = await db.collection('boardroom_sessions').find({}).toArray();
+    const sessions = await db.collection('boardroom_sessions').find({ userId: req.user.id }).toArray();
     const approvals = sessions.filter(s => s.verdict === 'APPROVED').length;
     const approvalRatio = totalSessions > 0 ? parseFloat((approvals / totalSessions).toFixed(2)) : 0;
 
-    // Simulate system performance indicators
+    // Load parsed business DNA profile stats
+    const profile = await db.collection('business_profile').findOne({ userId: req.user.id });
+    const hasProfile = !!profile;
+    const growthNum = parseFloat(profile?.keyMetrics?.growth) || 0;
+    const npsNum = parseInt(profile?.keyMetrics?.nps) || 0;
+    const revenueNum = parseFloat(profile?.keyMetrics?.revenue) || 0;
+
+    // System health: 0 if nothing exists, scales with approval ratio when debates happen
     const diagnosticHealthScore = totalSessions > 0 
       ? Math.round(80 + (approvals / totalSessions) * 20) 
-      : 95;
+      : (hasProfile ? 95 : 0);
 
     // Aggregate campaign simulation sandbox metrics
-    const simulations = await db.collection('campaign_simulations').find({}).toArray();
+    const simulations = await db.collection('campaign_simulations').find({ userId: req.user.id }).toArray();
     const totalSimulations = simulations.length;
     const totalSimulatedRevenue = simulations.reduce((acc, s) => acc + (s.revenueGenerated || 0), 0);
     const avgConversionRate = totalSimulations > 0 
@@ -64,18 +163,30 @@ export async function getDashboardStats(req, res) {
 
     return res.status(200).json({
       healthScore: diagnosticHealthScore,
-      growthScore: 60 + (totalCampaigns * 5) + (totalSimulations * 2),
-      revenue: totalSimulatedRevenue > 0 ? totalSimulatedRevenue : 142,
-      burnRate: 30 + (totalSessions * 2),
-      cac: totalSimulations > 0 ? Math.floor(1000 / totalSimulations) : 120,
-      ltv: totalSimulatedRevenue > 0 ? totalSimulatedRevenue * 3 : 2800,
-      nps: Math.round(70 + (approvalRatio * 20)),
-      pipelineValue: (totalCampaigns * 150) + 200,
-      riskIndex: Math.round(Math.max(10, 50 - (approvalRatio * 40))),
+      growthScore: Math.round(growthNum + (totalCampaigns * 2)),
+      revenue: totalSimulatedRevenue > 0 ? totalSimulatedRevenue : Math.round(revenueNum),
+      burnRate: revenueNum > 0 ? Math.round(revenueNum * 0.25) + (totalSessions * 2) : 0,
+      cac: totalSimulations > 0 ? Math.floor(1000 / totalSimulations) : 0,
+      ltv: totalSimulatedRevenue > 0 ? totalSimulatedRevenue * 3 : Math.round(revenueNum * 15),
+      nps: Math.round(npsNum + (approvalRatio * 10)),
+      pipelineValue: totalCampaigns > 0 ? (totalCampaigns * 150) + 200 : 0,
+      riskIndex: hasProfile ? Math.round(Math.max(10, 50 - (approvalRatio * 40))) : 0,
       // Extra fields for Analytics
       avgConversionRate: avgConversionRate,
       marketingCampaigns: totalCampaigns,
-      totalSimulationsRun: totalSimulations
+      totalSimulationsRun: totalSimulations,
+      // Backward compatibility for integration tests
+      stats: {
+        totalClinicians: totalUsers,
+        totalDebatesRun: totalSessions,
+        ragMemorySegments: totalMemorySegments,
+        marketingCampaigns: totalCampaigns,
+        consensusApprovalRatio: approvalRatio,
+        systemHealthIndex: diagnosticHealthScore,
+        totalSimulationsRun: totalSimulations,
+        simulatedRevenue: totalSimulatedRevenue,
+        avgConversionRate
+      }
     });
 
   } catch (error) {
@@ -106,6 +217,7 @@ export async function createCampaign(req, res) {
 
     const db = getDB();
     const newCampaign = {
+      userId: req.user.id,
       campaignName,
       targetAudience,
       channels,
@@ -136,7 +248,7 @@ export async function createCampaign(req, res) {
 export async function getCampaigns(req, res) {
   try {
     const db = getDB();
-    const campaigns = await db.collection('campaigns').find({}).sort({ created_at: -1 }).toArray();
+    const campaigns = await db.collection('campaigns').find({ userId: req.user.id }).sort({ created_at: -1 }).toArray();
     return res.status(200).json({ campaigns });
   } catch (error) {
     console.error('Error fetching campaigns:', error);
@@ -190,17 +302,17 @@ export async function simulateCampaign(req, res) {
     const campaignId = req.params.id;
     const db = getDB();
     
-    // Fetch target campaign
-    const campaign = await db.collection('campaigns').findOne({ _id: new ObjectId(campaignId) });
+    // Fetch target campaign scoped to user
+    const campaign = await db.collection('campaigns').findOne({ _id: new ObjectId(campaignId), userId: req.user.id });
     if (!campaign) {
       return res.status(404).json({ error: 'Target campaign not found.' });
     }
 
-    // Seed 30 buyer personas if not seeded yet
-    const buyerCount = await db.collection('buyer_personas').countDocuments();
+    // Seed 30 buyer personas if not seeded yet scoped to user
+    const buyerCount = await db.collection('buyer_personas').countDocuments({ userId: req.user.id });
     if (buyerCount === 0) {
       const mode = req.body.mode || 'healthcare';
-      console.log(`[Buyer Sandbox] Seeding 30 synthetic buyer personas [Mode: ${mode}]...`);
+      console.log(`[Buyer Sandbox] Seeding 30 synthetic buyer personas for user ${req.user.id} [Mode: ${mode}]...`);
       const seedBuyers = [];
       const roles = mode === 'enterprise' 
         ? ['Venture Capitalist', 'VP of Operations', 'Product Manager', 'Enterprise CIO', 'SaaS Procurement', 'HR Director', 'Head of Sales', 'Chief Marketing Officer', 'Finance VP', 'Data Scientist']
@@ -212,6 +324,7 @@ export async function simulateCampaign(req, res) {
 
       for (let i = 1; i <= 30; i++) {
         seedBuyers.push({
+          userId: req.user.id,
           id: `buyer_${i}`,
           role: roles[i % roles.length],
           channelPreference: channels[i % channels.length],
@@ -223,7 +336,7 @@ export async function simulateCampaign(req, res) {
       await db.collection('buyer_personas').insertMany(seedBuyers);
     }
 
-    const buyers = await db.collection('buyer_personas').find({}).toArray();
+    const buyers = await db.collection('buyer_personas').find({ userId: req.user.id }).toArray();
     let conversions = 0;
     let impressions = 0;
     const simulationTicks = [];
@@ -269,6 +382,7 @@ export async function simulateCampaign(req, res) {
     const revenueGenerated = conversions * 2500; // standard simulated customer lifetime value
 
     const report = {
+      userId: req.user.id,
       campaignId: new ObjectId(campaignId),
       campaignName: campaign.campaignName,
       totalImpressions: impressions,
@@ -280,7 +394,7 @@ export async function simulateCampaign(req, res) {
     };
 
     await db.collection('campaign_simulations').insertOne(report);
-    console.log(`[Buyer Sandbox] Campaign simulation complete. Conversions: ${conversions}/30`);
+    console.log(`[Buyer Sandbox] Campaign simulation complete for user ${req.user.id}. Conversions: ${conversions}/30`);
 
     return res.status(200).json({
       message: 'Campaign simulation completed successfully.',

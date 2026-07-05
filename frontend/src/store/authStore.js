@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { AudioSynth } from '../utils/AudioSynth';
+import { useDashboardStore } from './dashboardStore';
 
 export const useAuthStore = create((set, get) => {
   // Read initial user and theme from localStorage
@@ -76,6 +77,7 @@ export const useAuthStore = create((set, get) => {
     logout: () => {
       localStorage.removeItem('healos_user');
       AudioSynth.playTransition();
+      useDashboardStore.getState().resetStore();
       set({ user: null, isAuthenticated: false });
     },
   };

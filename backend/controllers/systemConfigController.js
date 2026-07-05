@@ -52,7 +52,7 @@ export async function updateSystemConfig(req, res) {
     await db.collection('system_config').updateOne(
       { key: 'system_config' },
       { $set: updated },
-      { upsrap: true, upsert: true }
+      { upsert: true }
     );
 
     console.log(`[System Config] Routing mode updated globally to: ${routingMode} (${manualProvider || 'N/A'})`);

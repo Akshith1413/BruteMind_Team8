@@ -21,7 +21,13 @@ const authHeaders = (extra = {}) => {
 /** Generic response handler — throws on non-2xx. */
 const handle = async (res) => {
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || body.message || res.statusText);
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('healos_user');
+      window.location.reload();
+    }
+    throw new Error(body.error || body.message || res.statusText);
+  }
   return body;
 };
 

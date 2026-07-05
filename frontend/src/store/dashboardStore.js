@@ -104,4 +104,22 @@ export const useDashboardStore = create((set, get) => ({
   // ─── System Model Configuration ──────────────────────────────
   systemConfig: { routingMode: 'auto', manualProvider: 'nvidia' },
   setSystemConfig: (cfg) => set({ systemConfig: cfg }),
+
+  // ─── Reset Store ─────────────────────────────────────────────
+  resetStore: () => set({
+    dashboardStats: null,
+    telemetryHistory: [],
+    latestTelemetry: null,
+    crisisAlert: null,
+    boardroomLogs: [],
+    agentVotes: {},
+    boardroomTopic: '',
+    boardroomFinalVerdict: null,
+    onboardingStatus: null,
+    businessProfile: null,
+    simulatorTicks: [],
+    simulatorReport: null,
+    campaigns: [],
+    copilotMessages: [],
+  }),
 }));

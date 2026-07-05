@@ -75,8 +75,10 @@ export default function registerSocketCoordinator(io) {
           return;
         }
 
-        // Seed default buyers if empty
-        const buyerCount = await db.collection('buyer_personas').countDocuments();
+        const userId = campaign.userId || null;
+
+        // Seed default buyers if empty for this user
+        const buyerCount = await db.collection('buyer_personas').countDocuments({ userId });
         if (buyerCount === 0) {
           const seedBuyers = [];
           const roles = mode === 'enterprise' 
@@ -90,6 +92,7 @@ export default function registerSocketCoordinator(io) {
 
           for (let i = 1; i <= 30; i++) {
             seedBuyers.push({
+              userId,
               id: `buyer_${i}`,
               role: roles[i % roles.length],
               channelPreference: channels[i % channels.length],
@@ -101,7 +104,7 @@ export default function registerSocketCoordinator(io) {
           await db.collection('buyer_personas').insertMany(seedBuyers);
         }
 
-        const buyers = await db.collection('buyer_personas').find({}).toArray();
+        const buyers = await db.collection('buyer_personas').find({ userId }).toArray();
         let conversions = 0;
         let impressions = 0;
         const simulationTicks = [];
