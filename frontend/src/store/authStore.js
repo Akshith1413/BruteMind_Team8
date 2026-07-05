@@ -11,6 +11,8 @@ export const useAuthStore = create((set, get) => {
   // Apply initial theme to document root
   document.documentElement.setAttribute('data-theme', initialTheme);
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   return {
     user: initialUser,
     isAuthenticated: !!initialUser,
@@ -32,7 +34,7 @@ export const useAuthStore = create((set, get) => {
 
     signup: async (username, email, specialty, pin) => {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+        const response = await fetch(`${BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, specialty, pin })
@@ -54,7 +56,7 @@ export const useAuthStore = create((set, get) => {
 
     login: async (email, pin) => {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch(`${BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, pin })
